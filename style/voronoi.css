@@ -1,16 +1,20 @@
 svg {
-  border: solid 1px #666;
-  overflow: hidden;
+	border: solid 1px #666;
+	overflow: hidden;
 }
 
 path {
-  fill: #0B486B;
-  stroke: #000;
-  stroke-width: .5px;
+	fill: #0B486B;
+	stroke: #000;
+	stroke-width: .5px;
 }
 
 circle {
-  fill: #ccc;
-  stroke: #000;
-  pointer-events: none;
+	fill: #ccc;
+	stroke: #000;
+	pointer-events: none;
+}
+
+.land{
+	fill: #443120;
 }

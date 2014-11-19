@@ -1,6 +1,6 @@
 var w = 1200, h = 800;
  
-var vertices = d3.range(500).map(function(d) {
+var vertices = d3.range(3000).map(function(d) {
  	  return [Math.random() * w, Math.random() * h];
 });
   
@@ -14,7 +14,7 @@ var svg = d3.select("#voronoi-map")
 //a 2d array with n points, each as a size-2 array for x,y
 var vCells = d3.geom.voronoi(vertices);
 //do a second pass: lloyd relaxtion
-var finalCells = runLloyd(vCells, 5);
+var finalCells = runLloyd(vCells, 10);
 var finalCentroids = calcCentroids(finalCells);
 
 //build graph
@@ -23,6 +23,8 @@ var corners = [];
 var edges = [];
 
 buildGraph(finalCells);
+doPerlin();
+draw(finalCells);
 
 svg.selectAll("circle")
 	.data(finalCentroids.slice(1))
@@ -41,11 +43,9 @@ function buildGraph(ps){
 		for(var j=0;j<p.length;j++){
 			var v = p[j];
 			var cornerShared = hasCorner(v[0], v[1]);
-			if(!cornerShared){
+			if(cornerShared === false){
 				var cor = new Corner(v[0], v[1], corners.length);
-				cor.x = v[0];
-				cor.y = v[1];
-				
+
 				cor.touches.push(c.idx);
 				corners.push(cor);
 				//center.corners done
@@ -53,6 +53,7 @@ function buildGraph(ps){
 			}else{
 				//already has this cornor
 				//touches done
+				console.log(cornerShared);
 				corners[cornerShared].touches.push(c.idx);
 				c.corners.push(cornerShared);
 			}
@@ -68,7 +69,7 @@ function buildGraph(ps){
 			e.v0 = v1;
 			e.v1 = v2;
 			var edgeExists = hasVoronoiEdge(e);
-			if(!edgeExists){
+			if(edgeExists === false){
 				//add borders
 				c.borders.push(e.idx);
 				//fill in d0
@@ -125,8 +126,8 @@ function shareVEdges(center1, center2){
 function hasCorner(x, y){
 	for(var i=0;i<corners.length;i++){
 		var c = corners[i];
-		if(c.x == x && c.y == y){
-			return i;
+		if(c.x === x && c.y === y){
+			return c.idx;
 		}
 	}
 	return false;
@@ -163,11 +164,7 @@ function runLloyd(polygons, n){
 	for(var i=0;i<n;i++){
 		polygons = lloydRelaxation(polygons);
 	}
-	svg.selectAll("path")
-		.data(polygons)
-		.enter().append("svg:path")
-		.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
-		.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+	
 	return polygons;
 }
 function lloydRelaxation(polygons){
@@ -177,10 +174,28 @@ function lloydRelaxation(polygons){
 		var c = 	centroid(p);
 		newSites.push([c.x, c.y]);
 	}
-	console.log(newSites[0])
 	vCellsNew = d3.geom.voronoi(newSites);
 
 	return vCellsNew;
+}
+//assign a perlin value to each center
+function doPerlin(){
+	noise.seed(Math.random());
+	for (var i = 0; i < centers.length; i++) {
+		// All noise functions return values in the range of -1 to 1.
+
+		// noise.simplex2 and noise.perlin2 for 2d noise
+		var perlinValue = noise.simplex2(centers[i].loc.x / 100, centers[i].loc.y / 100);
+		centers[i].perlinVal = perlinValue;
+	}
+}
+function draw(polygons){
+	svg.selectAll("path")
+		.data(polygons)
+		.enter().append("svg:path")
+		//.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
+		.attr("class", function(d, i) { if(centers[i].loc.x * centers[i].loc.x + centers[i].loc.y+centers[i].loc.y < 1000*500*2)return "land"})
+		.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
 }
 function update() {/*
 	vertices[0] = d3.mouse(this);
