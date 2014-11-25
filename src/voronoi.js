@@ -1,4 +1,4 @@
-var w = 1200, h = 800;
+var w = 1600, h = 900;
  
 var vertices = d3.range(3000).map(function(d) {
  	  return [Math.random() * w, Math.random() * h];
@@ -18,12 +18,23 @@ var finalCells = runLloyd(vCells, 10);
 var finalCentroids = calcCentroids(finalCells);
 
 //build graph
+var map = new Map({x:1600, y:900});
+
 var centers = [];
 var corners = [];
 var edges = [];
 
+//map.islandShape = makePerlin(1265, 0.5);
+//map.setIslandShape(makePerlin(1459164690, 0.5));
+map.makePerlin();
 buildGraph(finalCells);
-doPerlin();
+
+map.centers = centers;
+map.corners = corners;
+map.edges = edges;
+
+map.assignElevations();
+//doPerlin();
 draw(finalCells);
 
 svg.selectAll("circle")
@@ -33,7 +44,9 @@ svg.selectAll("circle")
 	.attr("r", 2);
 
 
-//ps: polygons
+//ps: polygons[][]
+//polygons[0]: vertices
+//vertex[2]
 function buildGraph(ps){
 	for(var i=0;i<ps.length;i++){
 		var p = ps[i];
@@ -45,6 +58,12 @@ function buildGraph(ps){
 			var cornerShared = hasCorner(v[0], v[1]);
 			if(cornerShared === false){
 				var cor = new Corner(v[0], v[1], corners.length);
+				//console.log("vs " ,v);
+				//console.log("corner (buildgraph): ", cor);
+
+				cor.border = (cor.x <= 0 || cor.x >= 1280
+					|| cor.y <= 0 || cor.y >= 600);
+				//console.log("corner border" , cor.border);
 
 				cor.touches.push(c.idx);
 				corners.push(cor);
@@ -53,7 +72,7 @@ function buildGraph(ps){
 			}else{
 				//already has this cornor
 				//touches done
-				console.log(cornerShared);
+//				console.log(cornerShared);
 				corners[cornerShared].touches.push(c.idx);
 				c.corners.push(cornerShared);
 			}
@@ -188,13 +207,49 @@ function doPerlin(){
 		var perlinValue = noise.simplex2(centers[i].loc.x / 100, centers[i].loc.y / 100);
 		centers[i].perlinVal = perlinValue;
 	}
+
 }
+function makePerlin(seed, oceanRatio) {
+    var oceanRatio = 0.5;
+    var landRatioMinimum = 0.1;
+    var landRatioMaximum = 0.5;
+    oceanRatio = ((landRatioMaximum - landRatioMinimum) * oceanRatio) + landRatioMinimum;  //min: 0.1 max: 0.5
+    var perlin = makePerlinNoise(256, 256, 1.0, 1.0, 1.0, seed, 8);
+
+    //q: corner
+    return function (q) {
+    	var row = ((q.x + 1) * 128) | 0;
+    	var col = (((q.y + 1) * 128 ) & 0xff) | 0;
+    	console.log("r: " , row , ", c: " , col );
+
+    	var c;
+    	if (_(perlin[row]).isUndefined()) {
+            c = null;
+        }else{
+        	c = perlin[row][col] / 255.0;
+        }
+        
+        
+        return c > (oceanRatio + 
+        	oceanRatio * (q.x * q.x + q.y * q.y)
+        	);
+    };
+}
+
 function draw(polygons){
 	svg.selectAll("path")
 		.data(polygons)
 		.enter().append("svg:path")
 		//.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
-		.attr("class", function(d, i) { if(centers[i].loc.x * centers[i].loc.x + centers[i].loc.y+centers[i].loc.y < 1000*500*2)return "land"})
+		.attr("class", function(d, i) { 
+			/*if(centers[i].loc.x * centers[i].loc.x 
+				+ centers[i].loc.y+centers[i].loc.y < 1000*500*2)*/
+				console.log("elevation: ", map.centers[i].elevation);
+				if(map.centers[i].water === false ){
+					return "land";
+				}
+			}
+		)
 		.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
 }
 function update() {/*
@@ -204,4 +259,8 @@ function update() {/*
 	.map(function(d) { return "M" + d.join("L") + "Z"; }))
 	.filter(function(d) { return this.getAttribute("d") != d; })
 	.attr("d", function(d) { return d; });*/
+}
+
+function distanceFromOrigin(p) {
+    return Math.sqrt(p.x * p.x + p.y * p.y);
 }
