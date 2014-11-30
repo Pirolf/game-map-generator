@@ -7,7 +7,7 @@ var Edge = function(idx){
 	this.v1 = null;
 
 	this.idx = idx;
-
+	this.river = 0; // volume of water, or 0
 
 	
 }

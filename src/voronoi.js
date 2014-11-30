@@ -1,6 +1,38 @@
-var w = 1600, h = 900;
- 
-var vertices = d3.range(3000).map(function(d) {
+var w = $(window).width(), h = $(window).height();
+//w = 800; h = 600;
+console.log(w, " ", h);
+var displayColors = {
+    // Features
+    OCEAN: 0x44447a,
+    COAST: 0x33335a,
+    LAKESHORE: 0x225588,
+    LAKE: 0x336699,
+    RIVER: 0x225588,
+    MARSH: 0x2f6666,
+    ICE: 0x99ffff,
+    BEACH: 0xa09077,
+    ROAD1: 0x442211,
+    ROAD2: 0x553322,
+    ROAD3: 0x664433,
+    BRIDGE: 0x686860,
+    LAVA: 0xcc3333,
+
+    // Terrain
+    SNOW: 0xffffff,
+    TUNDRA: 0xbbbbaa,
+    BARE: 0x888888,
+    SCORCHED: 0x555555,
+    TAIGA: 0x99aa77,
+    SHRUBLAND: 0x889977,
+    TEMPERATE_DESERT: 0xc9d29b,
+    TEMPERATE_RAIN_FOREST: 0x448855,
+    TEMPERATE_DECIDUOUS_FOREST: 0x679459,
+    GRASSLAND: 0x88aa55,
+    SUBTROPICAL_DESERT: 0xd2b98b,
+    TROPICAL_RAIN_FOREST: 0x337755,
+    TROPICAL_SEASONAL_FOREST: 0x559944
+};
+var vertices = d3.range(1000).map(function(d) {
  	  return [Math.random() * w, Math.random() * h];
 });
   
@@ -14,11 +46,11 @@ var svg = d3.select("#voronoi-map")
 //a 2d array with n points, each as a size-2 array for x,y
 var vCells = d3.geom.voronoi(vertices);
 //do a second pass: lloyd relaxtion
-var finalCells = runLloyd(vCells, 10);
+var finalCells = runLloyd(vCells, 2);
 var finalCentroids = calcCentroids(finalCells);
 
 //build graph
-var map = new Map({x:1600, y:900});
+var map = new Map({x:w, y:h});
 
 var centers = [];
 var corners = [];
@@ -34,7 +66,9 @@ map.corners = corners;
 map.edges = edges;
 
 map.assignElevations();
-//doPerlin();
+map.assignMoisture(200);
+map.decorateMap();
+
 draw(finalCells);
 
 svg.selectAll("circle")
@@ -220,7 +254,7 @@ function makePerlin(seed, oceanRatio) {
     return function (q) {
     	var row = ((q.x + 1) * 128) | 0;
     	var col = (((q.y + 1) * 128 ) & 0xff) | 0;
-    	console.log("r: " , row , ", c: " , col );
+    	//console.log("r: " , row , ", c: " , col );
 
     	var c;
     	if (_(perlin[row]).isUndefined()) {
@@ -241,15 +275,35 @@ function draw(polygons){
 		.data(polygons)
 		.enter().append("svg:path")
 		//.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
-		.attr("class", function(d, i) { 
-			/*if(centers[i].loc.x * centers[i].loc.x 
-				+ centers[i].loc.y+centers[i].loc.y < 1000*500*2)*/
-				console.log("elevation: ", map.centers[i].elevation);
+		/*.attr("class", function(d, i) { 
 				if(map.centers[i].water === false ){
 					return "land";
 				}
 			}
-		)
+		)*/
+		.style("fill", function(d, i){
+			var p = map.centers[i];
+			var color;
+			if(!_.isNull(p.biome)){
+	          color = displayColors[p.biome];
+	        }else{
+	          if(p.ocean){
+	            color = displayColors.OCEAN;
+	          }else{
+	            if(p.water){
+	              color = displayColors.RIVER;
+	            }else{
+	              color = 0xffffff;
+	            }
+	          }
+	        }//end outer if*/
+	        color = intToHexColor(interpolateColor(color, 0xdddddd, 0.2));
+	        //color = intToHexColor(color);
+	        /*if(i > 200 && i < 230){
+	        	console.log(color);
+	        }*/
+	        return color;
+		})
 		.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
 }
 function update() {/*
