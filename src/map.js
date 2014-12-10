@@ -6,7 +6,7 @@ var Map = function(size){
 
     this.mapRandom = new prng();
 	this.makePerlin = function(){
-		var seed = 14592984;
+		var seed = 628708549;
 		
 	    m.perlin = makePerlinNoise(256, 256, 1.0, 1.0, 1.0, seed, 8, 0.5);
 	};
@@ -26,7 +26,7 @@ var Map = function(size){
 	    	//console.log("r: " , row , ", c: " , col );
 
 	    	var c;
-	    	if (_(m.perlin[row]).isUndefined()) {
+	    	if (_(m.perlin[col]).isUndefined()) {
 	            c = null;
 	        }else{
 	        	c = m.perlin[col][row] / 255.0;
@@ -52,7 +52,7 @@ var Map = function(size){
 	};
     //1
 	this.assignElevations = function(){
-		var lakeThreashold = 0.65;
+		var lakeThreashold = 0.5;
 		m.assignCornerElevations();
 		m.assignOceanCoastAndLand(lakeThreashold);
 
