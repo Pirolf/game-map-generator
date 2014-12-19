@@ -10,7 +10,7 @@ var displayColors = {
     RIVER: 0x225588,
     MARSH: 0x2f6666,
     ICE: 0x99ffff,
-    BEACH: 0xa09077,
+    BEACH: 0xa0A077,
     ROAD1: 0x442211,
     ROAD2: 0x553322,
     ROAD3: 0x664433,

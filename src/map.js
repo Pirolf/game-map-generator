@@ -105,6 +105,7 @@ var Map = function(size){
                 sumMoisture += q.moisture;
             })
             p.moisture = sumMoisture / p.corners.length;
+            //if(p.moisture > 0.3 && !p.water)console.log("moi: " + p.moisture)
         });
         
     };
@@ -133,7 +134,7 @@ var Map = function(size){
         var queue = []; // Array<Corner>
         // Fresh water
         _.each(m.corners, function (q){
-            if ((q.water || q.river > 0) && !q.ocean) {
+            if ((q.water || q.river > 0) /*&& !q.ocean*/) {
                 if(q.river > 0){
                     q.moisture = Math.min(3.0, (0.2 * q.river));
                 }else{
@@ -233,7 +234,7 @@ var Map = function(size){
         //riverChance 
         //= core.coalesce(riverChance, core.toInt((pub.SIZE.width + pub.SIZE.height) / 4));
 
-        riverChance = ((m.sz.width + m.sz.height) / 4) | 0;
+        riverChance = ((m.sz.width + m.sz.height) / 4.0) | 0;
 
         var i, q, edge;
       
@@ -271,8 +272,8 @@ var Map = function(size){
         }
         return null;
     };
-	this.assignCornerElevations = function(){
-		var queue = []; // Array<Corner>
+    this.assignCornerElevations = function(){
+	var queue = []; // Array<Corner>
 
         _.each(m.corners, function (corner) {
             corner.water = !m.inside({x: corner.x, y:corner.y});
@@ -377,10 +378,11 @@ this.assignOceanCoastAndLand = function(lakeThreshold){
             var numLand = 0;
             _.each(p.neighbors, function (ridx){
                 var r = m.centers[ridx];
-                numOcean += intFromBoolean(r.ocean);
+                numOcean += intFromBoolean(r.ocean || r.water);
                 numLand += intFromBoolean(!r.water);
             });
             p.coast = (numOcean > 0) && (numLand > 0);
+            if(p.coast === true)console.log("coast");
         });
 
 
@@ -470,28 +472,28 @@ this.assignOceanCoastAndLand = function(lakeThreshold){
             return 'LAKE';
         } else if (p.coast === true) {
             return 'BEACH';
-        } else if (p.elevation > 0.8) {
+        } else if (p.elevation > 0.9) {
             //return 'SNOW';
             if (p.moisture > 0.50) { return 'SNOW'; }
-            else if (p.moisture > 0.33) { return 'TUNDRA'; }
-            else if (p.moisture > 0.16) { return 'BARE'; }
+            else if (p.moisture > 0.01) { return 'TUNDRA'; }
+            else if (p.moisture > 0.01) { return 'BARE'; }
             else { return 'SCORCHED'; }
-        } else if (p.elevation > 0.6) {
+        } else if (p.elevation > 0.75) {
             //return 'TAIGA';
-            if (p.moisture > 0.66) { return 'TAIGA'; }
-            else if (p.moisture > 0.33) { return 'SHRUBLAND'; }
+            if (p.moisture > 0.36) { return 'TAIGA'; }
+            else if (p.moisture > 0.01) { return 'SHRUBLAND'; }
             else { return 'TEMPERATE_DESERT'; }
-        } else if (p.elevation > 0.3) {
+        } else if (p.elevation > 0.4) {
             //return 'TEMPERATE_DECIDUOUS_FOREST';
-            if (p.moisture > 0.83) { return 'TEMPERATE_RAIN_FOREST'; }
-            else if (p.moisture > 0.50) { return 'TEMPERATE_DECIDUOUS_FOREST'; }
-            else if (p.moisture > 0.16) { return 'GRASSLAND'; }
+            if (p.moisture > 0.5) { return 'TEMPERATE_RAIN_FOREST'; }
+            else if (p.moisture > 0.3) { return 'TEMPERATE_DECIDUOUS_FOREST'; }
+            else if (p.moisture > 0.01) { return 'GRASSLAND'; }
             else { return 'TEMPERATE_DESERT'; }
         } else {
             //return 'TROPICAL_SEASONAL_FOREST';
-            if (p.moisture > 0.66) { return 'TROPICAL_RAIN_FOREST'; }
-            else if (p.moisture > 0.33) { return 'TROPICAL_SEASONAL_FOREST'; }
-            else if (p.moisture > 0.16) { return 'GRASSLAND'; }
+            if (p.moisture > 0.5) { return 'TROPICAL_RAIN_FOREST'; }
+            else if (p.moisture > 0.1) { return 'TROPICAL_SEASONAL_FOREST'; }
+            else if (p.moisture > 0.05) { return 'GRASSLAND'; }
             else { return 'SUBTROPICAL_DESERT'; }
         }
     };
