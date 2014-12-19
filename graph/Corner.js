@@ -10,14 +10,14 @@ var Corner = function(x, y, idx){
 
 	this.water = null;  // lake or ocean
 	this.ocean = null;
-    this.coast = null;  // touches ocean and land polygons
-    this.border = null;  // at the edge of the map
-    this.elevation = null;  // 0.0-1.0
-    this.downslope = idx; //for rivers
-    this.watershed = null;
-    this.watershedSize = null;
-    this.river = 0;
-    this.moisture = null;  // 0.0-1.0
+	this.coast = null;  // touches ocean and land polygons
+	this.border = null;  // at the edge of the map
+	this.elevation = null;  // 0.0-1.0
+	this.downslope = idx; //for rivers
+	this.watershed = null;
+	this.watershedSize = null;
+	this.river = 0;
+	this.moisture = null;  // 0.0-1.0
 
 	this.equals = function(other){
 		return (other.x == this.x && other.y == this.y);

@@ -3,21 +3,22 @@ var Map = function(size){
 	this.sz = {width: size.x, height:size.y};
 	this.perlin = [];
 	var m = this;
+            this.oceanRatio = false;
+            this.mapRandom = new prng();
 
-    this.mapRandom = new prng();
-	this.makePerlin = function(){
-		var seed = 628708549;
-		
+	this.makePerlin = function(seed){
+	    //var seed = 628708549;	
 	    m.perlin = makePerlinNoise(256, 256, 1.0, 1.0, 1.0, seed, 8, 0.5);
 	};
 	
 	//this.islandShape => this is a function
 	this.islandShape = function(q){
 		
-                var oceanRatio = 0.7;
+                //var oceanRatio = 0.7;
+                /*if(this.oceanRatio === false)*/this.oceanRatio = 0.7;
                 var landRatioMinimum = 0.1;
                 var landRatioMaximum = 0.5;
-                oceanRatio = ((landRatioMaximum - landRatioMinimum) * oceanRatio) + landRatioMinimum;  //min: 0.1 max: 0.5
+                this.oceanRatio = ((landRatioMaximum - landRatioMinimum) * this.oceanRatio) + landRatioMinimum;  //min: 0.1 max: 0.5
 	    //q: corner
 	    //return function (q) {
 	    	var row = ((q.x + 1) * 128) | 0; // |0 to int
@@ -33,8 +34,8 @@ var Map = function(size){
 	        	//console.log("color:" , c)
 	        }
 	        
-	        var retVal = c > (oceanRatio + 
-	        	oceanRatio * (q.x * q.x + q.y * q.y)
+	        var retVal = c > (this.oceanRatio + 
+	        	this.oceanRatio * (q.x * q.x + q.y * q.y)
 	        	);/*
 	        console.log("right: ", oceanRatio + 
 	        	oceanRatio * (q.x * q.x + q.y * q.y));*/
@@ -52,7 +53,8 @@ var Map = function(size){
 	};
     //1
 	this.assignElevations = function(){
-		var lakeThreashold = 0.5;
+                       var lakeThreashold = 0.5;
+		//var lakeThreashold = this.oceanRatio / 10;
 		m.assignCornerElevations();
 		m.assignOceanCoastAndLand(lakeThreashold);
 

@@ -32,7 +32,7 @@ var displayColors = {
     TROPICAL_RAIN_FOREST: 0x337755,
     TROPICAL_SEASONAL_FOREST: 0x559944
 };
-var vertices = d3.range(1000).map(function(d) {
+var vertices = d3.range(2000).map(function(d) {
  	  return [Math.random() * w, Math.random() * h];
 });
   
@@ -46,19 +46,20 @@ var svg = d3.select("#voronoi-map")
 //a 2d array with n points, each as a size-2 array for x,y
 var vCells = d3.geom.voronoi(vertices);
 //do a second pass: lloyd relaxtion
-var finalCells = runLloyd(vCells, 2);
+var finalCells = runLloyd(vCells, 1);
 var finalCentroids = calcCentroids(finalCells);
 
 //build graph
-var map = new Map({x:w, y:h});
 
+var map = new Map({x:w, y:h});
+initUI();
 var centers = [];
 var corners = [];
 var edges = [];
 
-//map.islandShape = makePerlin(1265, 0.5);
-//map.setIslandShape(makePerlin(1459164690, 0.5));
-map.makePerlin();
+var randGen = new prng();
+var seed = randGen.makeRandomSeed();
+map.makePerlin(seed);
 buildGraph(finalCells);
 
 map.centers = centers;
@@ -72,13 +73,45 @@ map.decorateMap();
 
 draw(finalCells);
 
-svg.selectAll("circle")
+/*svg.selectAll("circle")
 	.data(finalCentroids.slice(1))
 	.enter().append("svg:circle")
 	.attr("transform", function(d) { return "translate(" + d + ")"; })
-	.attr("r", 2);
+	.attr("r", 2);*/
 
 
+function initUI(){
+	var oceanRatioController;
+	window.onload = function() {
+		//var gui = new DAT.GUI();
+		//map = new Map({x:w, y:h});
+		/*oceanRatioController = gui.add(map, 'oceanRatio', 0, 1).step(0.05);
+		oceanRatioController.onFinishChange(function(value) {
+		 	alert("The new value is " + value);
+		 	svg.selectAll("*").remove();
+
+		 	//map.oceanRatio = value;
+		 	centers = [];
+			corners = [];
+			edges = [];
+
+			map.makePerlin();
+			buildGraph(finalCells);
+
+			map.centers = centers;
+			map.corners = corners;
+			map.edges = edges;
+		 	map.assignElevations();
+			map.assignMoisture(200);
+			map.decorateMap();
+			//TODO: build noisy edges
+
+			draw(finalCells);
+		});*/
+	};
+
+
+}
 //ps: polygons[][]
 //polygons[0]: vertices
 //vertex[2]
