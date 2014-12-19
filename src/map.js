@@ -14,10 +14,10 @@ var Map = function(size){
 	//this.islandShape => this is a function
 	this.islandShape = function(q){
 		
-			var oceanRatio = 0.7;
-		    var landRatioMinimum = 0.1;
-		    var landRatioMaximum = 0.5;
-		    oceanRatio = ((landRatioMaximum - landRatioMinimum) * oceanRatio) + landRatioMinimum;  //min: 0.1 max: 0.5
+                var oceanRatio = 0.7;
+                var landRatioMinimum = 0.1;
+                var landRatioMaximum = 0.5;
+                oceanRatio = ((landRatioMaximum - landRatioMinimum) * oceanRatio) + landRatioMinimum;  //min: 0.1 max: 0.5
 	    //q: corner
 	    //return function (q) {
 	    	var row = ((q.x + 1) * 128) | 0; // |0 to int
@@ -278,7 +278,7 @@ var Map = function(size){
 
         _.each(m.corners, function (c) {
             // The edges of the map are elevation 0
-            if (c.border) {
+            if (c.border ===true) {
                 //console.log("Im border");
                 c.elevation = 0.0;
                 queue.push(c);
@@ -318,17 +318,17 @@ var Map = function(size){
         }//end while
 	};//end assign corner elevation
 
-	//point: corner.point
-	this.inside = function(point){
-		var retVal =  m.islandShape({ 
-				x: 2 * (point.x / m.sz.width - 0.5),
-				y: 2 * (point.y / m.sz.height - 0.5) 
-			});
-		//console.log("is inside: ", retVal)
-		return retVal;
-	};
+//point: corner.point
+this.inside = function(point){
+	var retVal =  m.islandShape({ 
+			x: 2 * (point.x / m.sz.width - 0.5),
+			y: 2 * (point.y / m.sz.height - 0.5) 
+		});
+	//console.log("is inside: ", retVal)
+	return retVal;
+};
 
-	this.assignOceanCoastAndLand = function(lakeThreshold){
+this.assignOceanCoastAndLand = function(lakeThreshold){
 		// Compute polygon attributes 'ocean' and 'water' based on the
         // corner attributes. Count the water corners per
         // polygon. Oceans are all polygons connected to the edge of the

@@ -68,6 +68,7 @@ map.edges = edges;
 map.assignElevations();
 map.assignMoisture(200);
 map.decorateMap();
+//TODO: build noisy edges
 
 draw(finalCells);
 
@@ -95,8 +96,8 @@ function buildGraph(ps){
 				//console.log("vs " ,v);
 				//console.log("corner (buildgraph): ", cor);
 
-				cor.border = (cor.x <= 0 || cor.x >= 1280
-					|| cor.y <= 0 || cor.y >= 600);
+				cor.border = (cor.x <= 0 || cor.x >= w
+					|| cor.y <= 0 || cor.y >= h);
 				//console.log("corner border" , cor.border);
 
 				cor.touches.push(c.idx);
@@ -272,39 +273,35 @@ function makePerlin(seed, oceanRatio) {
 
 function draw(polygons){
 	svg.selectAll("path")
-		.data(polygons)
-		.enter().append("svg:path")
-		//.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
-		/*.attr("class", function(d, i) { 
-				if(map.centers[i].water === false ){
-					return "land";
-				}
+	.data(polygons)
+	.enter().append("svg:path")
+	//.attr("class", function(d, i) { return i ? "q" + (i % 9) + "-9" : null; })
+	/*.attr("class", function(d, i) { 
+			if(map.centers[i].water === false ){
+				return "land";
 			}
-		)*/
-		.style("fill", function(d, i){
-			var p = map.centers[i];
-			var color;
-			if(!_.isNull(p.biome)){
-	          color = displayColors[p.biome];
-	        }else{
-	          if(p.ocean){
-	            color = displayColors.OCEAN;
-	          }else{
-	            if(p.water){
-	              color = displayColors.RIVER;
-	            }else{
-	              color = 0xffffff;
-	            }
-	          }
-	        }//end outer if*/
-	        color = intToHexColor(interpolateColor(color, 0xdddddd, 0.2));
-	        //color = intToHexColor(color);
-	        /*if(i > 200 && i < 230){
-	        	console.log(color);
-	        }*/
-	        return color;
-		})
-		.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
+		}
+	)*/
+	.style("fill", function(d, i){
+		var p = map.centers[i];
+		var color;
+		if(!_.isNull(p.biome)){
+		  color = displayColors[p.biome];
+		}else{
+		  if(p.ocean){
+		    color = displayColors.OCEAN;
+		  }else{
+		    if(p.water){
+		      color = displayColors.RIVER;
+		    }else{
+		      color = 0xffffff;
+		    }
+		  }
+		}//end outer if*/
+		color = intToHexColor(interpolateColor(color, 0xdddddd, 0.2));
+		return color;
+	})
+	.attr("d", function(d) { return "M" + d.join("L") + "Z"; });
 }
 function update() {/*
 	vertices[0] = d3.mouse(this);
